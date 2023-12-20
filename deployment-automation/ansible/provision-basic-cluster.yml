@@ -5,7 +5,7 @@
 - name: Provision nodes
   hosts: redpanda
   vars:
-    advertise_public_ips: true
+    advertise_public_ips: false
     redpanda_version: latest
   tasks:
     - name: Install system prereqs
