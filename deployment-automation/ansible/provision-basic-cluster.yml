@@ -11,8 +11,9 @@
     auth_kind: machineaccount
     service_account_email: "{{ gcp_service_account }}"
   loop:
-    - "us-east1-b"
-    - "us-east1-c"  # Add your additional zones here
+    - "asia-south1-a"
+    - "asia-south1-b"
+    - "asia-south1-c"  # Add your additional zones here
   register: gce_redpanda_brokers
         
 - name: Print VM instance data from all zones
