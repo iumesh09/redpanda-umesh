@@ -7,7 +7,7 @@
 
 - name: Identify advertised ip address
   ansible.builtin.set_fact:
-    advertised_ip: "{{ inventory_hostname if (advertise_public_ips | d() | bool) else private_ip }}"
+    advertised_ip: "{{ hostvars[inventory_hostname]['ansible_default_ipv4']['address'] }}"
 
 # start out with an empty configuration object so we can fill in later based on
 # jinja templates or ansible variables defined by the user in
@@ -102,7 +102,7 @@
 #
 - name: Establish node id
   ansible.builtin.shell:
-    cmd: rpk cluster status {{ redpanda_rpk_opts }} | sed 's/*//g' | grep {{ hostvars[inventory_hostname].private_ip }} | awk '{ print $1;}'
+    cmd: rpk cluster status {{ redpanda_rpk_opts }} | sed 's/*//g' | grep {{ hostvars[inventory_hostname]['ansible_default_ipv4']['address'] }} | awk '{ print $1;}'
   register: node_id_out
   changed_when: false
 
@@ -128,7 +128,7 @@
   register: config_version
   changed_when: false
   run_once: true
-  no_log: true
+  no_log: false
 
 # set cluster-wide configurations
 #
@@ -240,3 +240,4 @@
   with_items: "{{ ansible_play_hosts }}"
   loop_control:
     loop_var: cluster_host
+

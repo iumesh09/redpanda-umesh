@@ -4,12 +4,12 @@
       "enabled": true,
       "urls": [
         {% if enable_tls | default(false) %}
-        {% for host in advertised_ips %}
-        "https://{{ host }}:{{ redpanda_schema_registry_port }}"{% if not loop.last %},{% endif %}
+        {% for ip in vm_instance_ips %}
+        "https://{{ ip }}:{{ redpanda_schema_registry_port }}"{% if not loop.last %},{% endif %}
         {% endfor %}
         {% else  %}
-        {% for host in advertised_ips %}
-        "http://{{ host }}:{{ redpanda_schema_registry_port }}"{% if not loop.last %},{% endif %}
+        {% for ip in vm_instance_ips %}
+        "http://{{ ip }}:{{ redpanda_schema_registry_port }}"{% if not loop.last %},{% endif %}
         {% endfor %}
         {% endif %}
       ]{% if enable_tls | default(false) %},
@@ -30,8 +30,8 @@
       }
     },
     "brokers": [
-      {% for host in advertised_ips %}
-      "{{ host }}:{{ redpanda_kafka_port }}"{% if not loop.last %},{% endif %}
+      {% for ip in vm_instance_ips %}
+      "{{ ip }}:{{ redpanda_kafka_port }}"{% if not loop.last %},{% endif %}
       {% endfor %}
     ]{% if enable_tls | default(false) %},
   "tls": {
@@ -48,12 +48,12 @@
       "enabled": true,
       "urls": [
         {% if enable_tls | default(false) %}
-        {% for host in advertised_ips %}
-        "https://{{ host }}:{{ redpanda_admin_api_port }}"{% if not loop.last %},{% endif %}
+        {% for ip in vm_instance_ips %}
+        "https://{{ ip }}:{{ redpanda_admin_api_port }}"{% if not loop.last %},{% endif %}
         {% endfor %}
         {% else  %}
-        {% for host in advertised_ips %}
-        "http://{{ host }}:{{ redpanda_admin_api_port }}"{% if not loop.last %},{% endif %}
+        {% for ip in vm_instance_ips %}
+        "http://{{ ip }}:{{ redpanda_admin_api_port }}"{% if not loop.last %},{% endif %}
         {% endfor %}
         {% endif %}
       ]{% if enable_tls | default(false) %},

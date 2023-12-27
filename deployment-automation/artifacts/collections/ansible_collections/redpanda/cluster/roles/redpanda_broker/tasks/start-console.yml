@@ -6,9 +6,7 @@
 
 - name: Create list of advertised_ips
   set_fact:
-    advertised_ips: "{{
-      groups['redpanda'] | map('extract', hostvars) | map(attribute='inventory_hostname' if (advertise_public_ips | default(False) | bool) else 'private_ip') | list
-    }}"
+    advertised_ips: "{{ vm_instance_ips | list }}"
 
 - name: Reset configuration
   ansible.builtin.set_fact:
@@ -39,3 +37,4 @@
   ansible.builtin.systemd:
     name: redpanda-console
     state: restarted
+
