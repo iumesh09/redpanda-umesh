@@ -2,36 +2,39 @@
 # variables
 # advertise_public_ips : causes the cluster to set a public ip on advertised_kafka_api, allowing access to the cluster from the public internet
 ---
-- name: Query GCE for VM instances in multiple zones
-  google.cloud.gcp_compute_instance_info:
-    zone: "{{ item }}"
-    filters:
-      - "(labels.role = data) AND (status = RUNNING OR status = PENDING)"
-    project: "{{ gcp_project_id }}" 
-    auth_kind: machineaccount
-    service_account_email: "{{ gcp_service_account }}"
-  loop:
-    - "asia-south1-a"
-    - "asia-south1-b"
-    - "asia-south1-c"  # Add your additional zones here
-  register: gce_redpanda_brokers
+- name: Provision Json for IP's
+  hosts: redpanda
+  tasks:
+  - name: Query GCE for VM instances in multiple zones
+    google.cloud.gcp_compute_instance_info:
+      zone: "{{ item }}"
+      filters:
+        - "(labels.role = broker) AND (status = RUNNING OR status = PENDING)"
+      project: "{{ gcp_project_id }}" 
+      auth_kind: machineaccount
+      service_account_email: "{{ gcp_service_account }}"
+    loop:
+      - "asia-south1-a"
+      - "asia-south1-b"  # Add your additional zones here
+      - "asia-south1-c"
+    register: gce_redpanda_brokers
         
-- name: Print VM instance data from all zones
-  ansible.builtin.debug:
-    msg: "gce_redpanda_brokers: {{ gce_redpanda_brokers }}" 
+  - name: Print VM instance data from all zones
+    ansible.builtin.debug:
+      msg: "gce_redpanda_brokers: {{ gce_redpanda_brokers }}" 
 
-- name: Set fact for VM instance IP addresses
-  set_fact:
-    vm_instance_ips: "{{ gce_redpanda_brokers.results | map(attribute='resources') | flatten | json_query('[].networkInterfaces[0].networkIP') }}"
+  - name: Set fact for VM instance IP addresses
+    set_fact:
+      vm_instance_ips: "{{ gce_redpanda_brokers.results | map(attribute='resources') | flatten | json_query('[].networkInterfaces[0].networkIP') }}"
 
-- name: Print the IP addresses fact
-  debug:
-    msg: "IP Address Of Redpanda Broker {{ vm_instance_ips }}"
+  - name: Print the IP addresses fact
+    debug:
+      msg: "IP Address Of Redpanda Broker {{ vm_instance_ips }}"
 
 - name: Provision nodes
   hosts: redpanda
   vars:
-    advertise_public_ips: true
+    advertise_public_ips: false
     redpanda_version: latest
   tasks:
     - name: Install system prereqs
@@ -45,7 +48,7 @@
 - name: Provision redpanda console
   hosts: client
   vars:
-    advertise_public_ips: true
+    advertise_public_ips: false
     redpanda_version: latest
     install_console: true
   tasks:
@@ -53,4 +56,3 @@
       ansible.builtin.include_role:
         name: redpanda.cluster.redpanda_broker
       when: not skip_node | default(false) | bool
-
