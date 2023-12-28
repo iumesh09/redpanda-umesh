@@ -57,7 +57,7 @@
   tasks:
     - name: Fetch Redpanda Client IP
       ansible.builtin.include_role:
-        name: redpanda.cluster.fetch_client_ip
+        name: redpanda.cluster.fetch_broker_ip
     - name: Install and start redpanda console
       ansible.builtin.include_role:
         name: redpanda.cluster.redpanda_broker
