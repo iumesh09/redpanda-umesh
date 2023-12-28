@@ -3,7 +3,7 @@
 # advertise_public_ips : causes the cluster to set a public ip on advertised_kafka_api, allowing access to the cluster from the public internet
 ---
 - name: Provision Json for IP's
-  hosts: redpanda
+  hosts: client
   tasks:
   - name: Query GCE for VM instances in multiple zones
     google.cloud.gcp_compute_instance_info:
