@@ -31,19 +31,19 @@
     debug:
       msg: "IP Address Of Redpanda Broker {{ vm_instance_ips }}"
 
-- name: Provision nodes
-  hosts: redpanda
-  vars:
-    advertise_public_ips: false
-    redpanda_version: latest
-  tasks:
-    - name: Install system prereqs
-      ansible.builtin.include_role:
-        name: redpanda.cluster.system_setup
-    - name: Install and start redpanda
-      ansible.builtin.include_role:
-        name: redpanda.cluster.redpanda_broker
-      when: not skip_node | default(false) | bool
+# - name: Provision nodes
+#   hosts: redpanda
+#   vars:
+#     advertise_public_ips: false
+#     redpanda_version: latest
+#   tasks:
+#     - name: Install system prereqs
+#       ansible.builtin.include_role:
+#         name: redpanda.cluster.system_setup
+#     - name: Install and start redpanda
+#       ansible.builtin.include_role:
+#         name: redpanda.cluster.redpanda_broker
+#       when: not skip_node | default(false) | bool
 
 - name: Provision redpanda console
   hosts: client
