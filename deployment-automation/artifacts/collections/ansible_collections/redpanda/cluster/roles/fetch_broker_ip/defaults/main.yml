@@ -1,0 +1,8 @@
+zones:
+  - "asia-south1-a"
+  - "asia-south1-b"
+  - "asia-south1-c"
+
+gcp_service_account: "devtron-sa@umesh-dev.iam.gserviceaccount.com"
+
+gcp_project_id: "umesh-dev"

@@ -1,49 +1,52 @@
 # This playbook provisions a Redpanda cluster with no bells or whistles for evaluation purposes
 # variables
 # advertise_public_ips : causes the cluster to set a public ip on advertised_kafka_api, allowing access to the cluster from the public internet
----
-- name: Provision Json for IP's
-  hosts: client
-  tasks:
-  - name: Query GCE for VM instances in multiple zones
-    google.cloud.gcp_compute_instance_info:
-      zone: "{{ item }}"
-      filters:
-        - "(labels.role = broker) AND (status = RUNNING OR status = PENDING)"
-      project: "{{ gcp_project_id }}" 
-      auth_kind: machineaccount
-      service_account_email: "{{ gcp_service_account }}"
-    loop:
-      - "asia-south1-a"
-      - "asia-south1-b"  # Add your additional zones here
-      - "asia-south1-c"
-    register: gce_redpanda_brokers
-        
-  - name: Print VM instance data from all zones
-    ansible.builtin.debug:
-      msg: "gce_redpanda_brokers: {{ gce_redpanda_brokers }}" 
-
-  - name: Set fact for VM instance IP addresses
-    set_fact:
-      vm_instance_ips: "{{ gce_redpanda_brokers.results | map(attribute='resources') | flatten | json_query('[].networkInterfaces[0].networkIP') }}"
-
-  - name: Print the IP addresses fact
-    debug:
-      msg: "IP Address Of Redpanda Broker {{ vm_instance_ips }}"
-
-# - name: Provision nodes
-#   hosts: redpanda
-#   vars:
-#     advertise_public_ips: false
-#     redpanda_version: latest
+# ---
+# - name: Provision Json for IP's
+#   hosts: client
 #   tasks:
-#     - name: Install system prereqs
-#       ansible.builtin.include_role:
-#         name: redpanda.cluster.system_setup
-#     - name: Install and start redpanda
-#       ansible.builtin.include_role:
-#         name: redpanda.cluster.redpanda_broker
-#       when: not skip_node | default(false) | bool
+#   - name: Query GCE for VM instances in multiple zones
+#     google.cloud.gcp_compute_instance_info:
+#       zone: "{{ item }}"
+#       filters:
+#         - "(labels.role = broker) AND (status = RUNNING OR status = PENDING)"
+#       project: "{{ gcp_project_id }}" 
+#       auth_kind: machineaccount
+#       service_account_email: "{{ gcp_service_account }}"
+#     loop:
+#       - "asia-south1-a"
+#       - "asia-south1-b"  # Add your additional zones here
+#       - "asia-south1-c"
+#     register: gce_redpanda_brokers
+        
+#   - name: Print VM instance data from all zones
+#     ansible.builtin.debug:
+#       msg: "gce_redpanda_brokers: {{ gce_redpanda_brokers }}" 
+
+#   - name: Set fact for VM instance IP addresses
+#     set_fact:
+#       vm_instance_ips: "{{ gce_redpanda_brokers.results | map(attribute='resources') | flatten | json_query('[].networkInterfaces[0].networkIP') }}"
+
+#   - name: Print the IP addresses fact
+#     debug:
+#       msg: "IP Address Of Redpanda Broker {{ vm_instance_ips }}"
+
+- name: Provision nodes
+  hosts: redpanda
+  vars:
+    advertise_public_ips: false
+    redpanda_version: latest
+  tasks:
+    - name: Fetch Redpanda Broker IP
+      ansible.builtin.include_role:
+        name: redpanda.cluster.fetch_broker_ip
+    - name: Install system prereqs
+      ansible.builtin.include_role:
+        name: redpanda.cluster.system_setup
+    - name: Install and start redpanda
+      ansible.builtin.include_role:
+        name: redpanda.cluster.redpanda_broker
+      when: not skip_node | default(false) | bool
 
 - name: Provision redpanda console
   hosts: client
@@ -52,6 +55,9 @@
     redpanda_version: latest
     install_console: true
   tasks:
+    - name: Fetch Redpanda Client IP
+      ansible.builtin.include_role:
+        name: redpanda.cluster.fetch_client_ip
     - name: Install and start redpanda console
       ansible.builtin.include_role:
         name: redpanda.cluster.redpanda_broker
